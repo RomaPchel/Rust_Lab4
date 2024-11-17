@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Chat</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    .chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+    }
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      padding: 10px;
+      background-color: white;
+      max-height: 300px;
+    }
+    .message {
+      padding: 5px;
+      margin-bottom: 5px;
+      background-color: #efefef;
+      border-radius: 5px;
+    }
+    .input-area {
+      display: flex;
+      gap: 10px;
+    }
+    .input-area input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    .input-area button {
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .input-area button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+<div class="chat-container">
+  <div class="messages" id="messages">
+    <!-- Messages will appear here -->
+  </div>
+  <div class="input-area">
+    <input type="text" id="message-input" placeholder="Type your message..." />
+    <button onclick="sendMessage()">Send</button>
+  </div>
+</div>
+
+<script>
+  const socket = new WebSocket("ws://127.0.0.1:8080");
+
+  socket.onopen = () => {
+    console.log("Connected to the WebSocket server.");
+  };
+
+  socket.onmessage = (event) => {
+    const messagesDiv = document.getElementById("messages");
+    const newMessage = document.createElement("div");
+    newMessage.classList.add("message");
+    newMessage.textContent = event.data;
+    messagesDiv.appendChild(newMessage);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight; // Auto-scroll to the latest message
+  };
+
+  socket.onclose = () => {
+    console.log("Disconnected from the WebSocket server.");
+  };
+
+  socket.onerror = (error) => {
+    console.log(`WebSocket error: ${error}`);
+  };
+
+  function sendMessage() {
+    const messageInput = document.getElementById("message-input");
+    const message = messageInput.value.trim();
+    const messageBody = {
+      message: message,
+      user_id: 1,
+      chat_id: 1,
+    }
+    if (message) {
+      socket.send(JSON.stringify(messageBody));
+      messageInput.value = ""; // Clear input after sending
+    }
+  }
+</script>
+
+</body>
+</html>
