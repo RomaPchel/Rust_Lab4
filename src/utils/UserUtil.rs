@@ -1,8 +1,6 @@
-use std::error::Error;
-use actix_web::{web, HttpResponse, Responder};
+
 use sea_orm::{EntityTrait, FromQueryResult, QueryFilter, ColumnTrait, DatabaseConnection, ActiveModelTrait};
 use sea_orm::ActiveValue::Set;
-// Import ColumnTrait
 use sea_orm::prelude::DateTime;
 use serde::{Deserialize, Serialize};
 use crate::db::db::establish_connection;
@@ -21,15 +19,15 @@ pub struct User {
 pub async fn get_user_by_user_name(username: String) -> Result<Option<User>, Box<dyn std::error::Error>> {
     let pool: sea_orm::DatabaseConnection = establish_connection().await?;
 
-    // Correct use of `filter` after importing `ColumnTrait`
     let user = user::Entity::find()
-        .filter(user::Column::Username.eq(username.clone()))  // `eq` method now available
+        .filter(user::Column::Username.eq(username.clone()))
         .into_model::<User>()
-        .one(&pool)  // Use `&pool` instead of cloning
+        .one(&pool)
         .await?;
 
     Ok(user)
 }
+
 
 #[derive(Deserialize)]
 pub struct UpdatePasswordRequest {
@@ -38,12 +36,12 @@ pub struct UpdatePasswordRequest {
 }
 
 
+
 pub async fn update_password(
-    db: &DatabaseConnection, // Database connection
-    username: &str,          // The username of the user whose password needs to be updated
-    new_password: &str,      // The new password to set
+    db: &DatabaseConnection,
+    username: &str,
+    new_password: String,
 ) -> Result<(), String> {
-    // Step 1: Fetch the user from the database by username
     let user = user::Entity::find()
         .filter(user::Column::Username.eq(username))
         .one(db)
@@ -51,19 +49,17 @@ pub async fn update_password(
 
     match user {
         Ok(Some(mut user)) => {
-            // Step 2: Update the user's password
-            let mut active_model: ActiveModel = user.into(); // Convert the user to an ActiveModel
-            active_model.password = Set(new_password.to_string()); // Set the new password
+            let mut active_model: ActiveModel = user.into();
+            active_model.password = Set(new_password.to_string());
 
-            // Step 3: Save the updated user back to the database
             let result = active_model.update(db).await;
 
             match result {
-                Ok(_) => Ok(()), // Password update successful
-                Err(_) => Err("Error updating password".to_string()), // Error updating password
+                Ok(_) => Ok(()),
+                Err(_) => Err("Error updating password".to_string()),
             }
         }
-        Ok(None) => Err("User not found".to_string()), // User not found
-        Err(_) => Err("Error querying database".to_string()), // Database query error
+        Ok(None) => Err("User not found".to_string()),
+        Err(_) => Err("Error querying database".to_string()),
     }
 }

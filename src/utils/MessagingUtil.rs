@@ -4,8 +4,6 @@ use sea_orm::prelude::DateTime;
 use crate::entity::{chat_user, message, chat};
 use sea_orm::QueryFilter;
 use serde::{Deserialize, Serialize};
-use crate::db::db::establish_connection;
-use crate::utils::UserUtil::User;
 use sea_orm::ColumnTrait;
 
 #[derive(FromQueryResult, Debug, Serialize, Deserialize)]

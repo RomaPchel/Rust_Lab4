@@ -105,7 +105,6 @@
     const sendMessageButton = document.getElementById('sendMessageButton');
     const chatHeader = document.getElementById('chatHeader');
 
-    // Retrieve token from local storage
     const token = localStorage.getItem('accessToken');
     if (!token) {
         alert('No access token found. Redirecting to login.');
@@ -122,7 +121,7 @@
             const response = await fetch(`http://127.0.0.1:3000/get-chat-messages/${chatId}`, {
                 method: 'GET',
                 headers: {
-                    Authorization: `Bearer ${token}`, // Include token if required by the backend
+                    Authorization: `Bearer ${token}`,
                 },
             });
 
@@ -152,10 +151,9 @@
         }
     }
 
-    // Fetch messages when the page loads
     document.addEventListener('DOMContentLoaded', () => {
-        const chatId = 1; // Replace with dynamic chat ID if needed
-        chatHeader.textContent = `Chat with User ${chatId}`; // Example, replace with actual user info if available
+        const chatId = 1;
+        chatHeader.textContent = `Chat`;
         fetchChatMessages(chatId);
     });
 
@@ -176,24 +174,24 @@
 
     const decodedToken = decodeToken(token);
     if (decodedToken) {
-        console.log('User Info from Token:', decodedToken.sub); // Full user info
+        console.log('User Info from Token:', decodedToken.sub);
         document.body.insertAdjacentHTML(
             'afterbegin',
             `<h3>Welcome, ${decodedToken.sub.username}!</h3>`
         );
     } else {
-        alert('Invalid token. Redirecting to login.');
-        window.location.href = '/login.html';
+        alert('Invalid password. Redirecting to login.');
+        window.location.href = '/login.html?_ijt=s50l50o92meicepcolajjhk52n&_ij_reload=RELOAD_ON_SAVE';
     }
 
-    const ws = new WebSocket('ws://127.0.0.1:8080');
+    const ws = new WebSocket('ws://127.0.0.1:8022');
 
     ws.onopen = () => {
         console.log('Connected to WebSocket server');
     };
 
     ws.onmessage = (event) => {
-        const data = JSON.parse(event.data); // Parse the JSON data
+        const data = JSON.parse(event.data)
 
         const messageElement = document.createElement('p');
         messageElement.textContent = `${data.message}`;
@@ -221,7 +219,7 @@
         if (message.trim() !== '') {
             ws.send(JSON.stringify({
                 user_id: decodedToken.sub.id,
-                chat_id: 1, // Example chat_id, replace as needed
+                chat_id: 1,
                 message: message,
                 created_at: new Date()
             }));

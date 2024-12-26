@@ -12,10 +12,10 @@ dotenvy = "0.15"
 chrono = "0.4.38"
 tokio-tungstenite = "0.21.0"
 serde = { version = "1.0.215", features = ["derive"] }
-serde_json = "1.0.133" # For loading environment variables from .env file
-actix-web = "4.0"                  # HTTP framework
-actix-rt = "2.5"                   # To run the server
-jsonwebtoken = "8.1"               # For JWT handling
+serde_json = "1.0.133"
+actix-web = "4.0"
+actix-rt = "2.5"
+jsonwebtoken = "8.1"
 futures = "0.3"
-actix-web-actors = "4.0"            # For WebSocket support
+actix-web-actors = "4.0"
 bcrypt = "0.15.1"

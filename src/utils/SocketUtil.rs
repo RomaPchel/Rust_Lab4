@@ -13,12 +13,12 @@ pub async fn handle_connection(
     stream: TcpStream,
     tx: Arc<Mutex<broadcast::Sender<String>>>,
 ) {
+
     let ws_stream = accept_async(stream).await.expect("WebSocket handshake failed");
     let (mut write, mut read) = ws_stream.split();
 
-    let mut rx = tx.lock().await.subscribe(); // Await the mutex lock
+    let mut rx = tx.lock().await.subscribe();
 
-    // Spawn a task to forward broadcast messages to this client
     tokio::spawn(async move {
         while let Ok(msg) = rx.recv().await {
             if let Err(e) = write.send(Message::Text(msg)).await {
@@ -28,19 +28,17 @@ pub async fn handle_connection(
         }
     });
 
-    // Read messages from the client and broadcast them
     while let Some(Ok(Message::Text(text))) = read.next().await {
         if let Ok(parsed_message) = serde_json::from_str::<Value>(&text) {
             println!("Received message: {:?}", parsed_message);
 
-            let mut tx_guard = tx.lock().await; // Await the mutex lock
+            let mut tx_guard = tx.lock().await;
 
             if let Err(e) = tx_guard.send(text.clone()) {
                 eprintln!("Error broadcasting message: {:?}", e);
             } else {
                 println!("Broadcasted message: {}", text);
 
-                // Save the message to the database
                 if let (Some(user_id), Some(chat_id), Some(content)) = (
                     parsed_message["user_id"].as_i64(),
                     parsed_message["chat_id"].as_i64(),
